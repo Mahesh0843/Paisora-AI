@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Kharcha",
-    "slug": "kharcha",
-    "scheme": "kharcha",
+    "name": "Paisora AI",
+    "slug": "paisora-ai",
+    "scheme": "paisora",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,15 +12,17 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.kharcha.app"
+      "bundleIdentifier": "dev.paisora.ai"
     },
     "android": {
-      "package": "dev.kharcha.app",
+      "package": "dev.paisora.ai",
       "permissions": [
-        "android.permission.READ_SMS"
+        "android.permission.READ_SMS",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#121412",
+        "backgroundColor": "#0F1220",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -41,9 +43,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "b4f0e637-267f-4e82-9230-6bbbdd527a93"
+        "projectId": "94e8159f-905c-4177-ba58-088dbb42486c"
       }
     },
-    "owner": "deepon"
+    "owner": "paisora-studio"
   }
 }

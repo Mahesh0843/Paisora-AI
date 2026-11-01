@@ -1,6 +1,9 @@
 export const CATEGORIES = [
   'Food & dining', 'Groceries', 'Travel', 'Bills', 'Shopping',
-  'Health', 'Entertainment', 'Transfers',
+  'Health', 'Entertainment', 'Transfers','EMI & loans',
+  'Salary',
+  'Investment',
+  'Cash withdrawal',
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
@@ -41,6 +44,7 @@ export interface Preferences {
   readSms: boolean;
   autoAdd: boolean;
   lastScanAt: number;
+  llmPrivacyLevel: 'strict' | 'balanced' | 'rich'; 
 }
 
 export const DEFAULT_SENDERS: SenderRule[] = [
@@ -54,4 +58,5 @@ export const DEFAULT_PREFERENCES: Preferences = {
   readSms: false,
   autoAdd: true,
   lastScanAt: 0,
+  llmPrivacyLevel: 'balanced',
 };

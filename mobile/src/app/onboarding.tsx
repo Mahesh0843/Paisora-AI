@@ -30,7 +30,7 @@ export default function Onboarding() {
   }
   return <Screen><View style={{ flex: 1, minHeight: 620, paddingTop: 24, paddingBottom: 26, justifyContent: 'space-between' }}>
     <View>
-      <Text style={{ fontFamily: fonts.display, fontSize: 30, color: p.ink }}>kharcha<Text style={{ color: p.marigold }}>.</Text></Text>
+      <Text style={{ fontFamily: fonts.display, fontSize: 30, color: p.ink }}>Paisora AI<Text style={{ color: p.marigold }}>.</Text></Text>
       <View style={{ marginTop: 40, marginBottom: 22, alignSelf: 'flex-start', transform: [{ rotate: '-5deg' }] }}>
         <View style={{ width: 190, height: 190, backgroundColor: p.leaf, padding: 17, borderRadius: 16, justifyContent: 'space-between' }}>
           <Text style={{ fontFamily: fonts.bodyMedium, color: p.onLeaf, fontSize: 13 }}>A quieter way to see spending</Text>
@@ -39,7 +39,7 @@ export default function Onboarding() {
         </View>
       </View>
       <Text style={{ fontFamily: fonts.display, fontSize: 40, lineHeight: 43, color: p.ink, maxWidth: 480 }}>Your money, decoded.</Text>
-      <Body muted style={{ marginTop: 14, maxWidth: 420 }}>Kharcha reads bank SMS on your phone and turns them into a private spending ledger. Keep the message beside every entry, so you can always check the source.</Body>
+      <Body muted style={{ marginTop: 14, maxWidth: 420 }}>Paisora AI reads bank SMS on your phone and turns them into a private spending ledger. Keep the message beside every entry, so you can always check the source.</Body>
     </View>
     <View style={{ gap: 12, paddingTop: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name="lock" color={p.leaf} size={19} /><Body>Stays on this device. Backup is your choice.</Body></View>

@@ -1,12 +1,72 @@
+﻿# ─── Dependencies ───
 **/node_modules/
+**/.pnp
+**/.pnp.js
+
+# ─── Expo ───
 **/.expo/
+**/.expo-shared/
 **/dist/
-**/build/
+**/web-build/
+**/.cache/
+
+# ─── Native BUILD artifacts (exclude build output, KEEP source) ───
+# Android build artifacts
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/.cxx/
+**/android/app/.cxx/
+**/android/local.properties
+**/android/.idea/
+**/android/app/release/
+**/android/app/debug/
+
+# iOS build artifacts
+**/ios/Pods/
+**/ios/build/
+
+# ─── Secrets — NEVER COMMIT ───
 **/.env
 **/.env.local
 **/.env.*.local
+**/.env.production
+**/.env.development
+!**/.env.example
+credentials.json
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.pem
+*.key
+
+# ─── Build outputs ───
+*.apk
+*.aab
+*.ipa
+
+# ─── Testing ───
 **/coverage/
-mobile/android/
-mobile/ios/
+**/.nyc_output/
+
+# ─── Logs ───
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── OS ───
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE ───
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Temp / scratch ───
+mobile/test_format.mjs

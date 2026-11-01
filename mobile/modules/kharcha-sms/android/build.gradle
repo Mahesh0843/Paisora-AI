@@ -3,11 +3,11 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 
-group = 'dev.kharcha.sms'
+group = 'dev.paisora.sms'
 version = '0.1.0'
 
 android {
-  namespace "dev.kharcha.sms"
+  namespace "dev.paisora.sms"
   defaultConfig {
     versionCode 1
     versionName "0.1.0"

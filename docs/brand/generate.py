@@ -1,4 +1,4 @@
-"""Regenerate the Kharcha launch graphics from the app's installed font packages.
+"""Regenerate the Paisora AI launch graphics.
 
 Run after `cd mobile && npm ci`: `python3 ../docs/brand/generate.py`.
 Requires Pillow. The generated PNGs are committed so readers need no design tools.
@@ -13,14 +13,19 @@ ASSETS = ROOT / "mobile" / "assets"
 FONTS = ROOT / "mobile" / "node_modules" / "@expo-google-fonts"
 SCALE = 2
 
-INK = "#EFEADF"
-MUTED = "#A6A499"
-BG = "#121412"
-SURFACE = "#1B1E1B"
-LEAF = "#8FC7A8"
-ON_LEAF = "#10241A"
-GOLD = "#F0B453"
-DEBIT = "#F38A63"
+# ────────────────────────────────────────────────────────────
+# Paisora AI — dark palette (used for cover, social card, icons)
+# ────────────────────────────────────────────────────────────
+INK = "#E9EDFA"           # primary text
+MUTED = "#8993B5"         # secondary text
+BG = "#0A0F1F"            # midnight navy background
+SURFACE = "#141B2E"       # elevated surface
+PRIMARY = "#6D9EFF"       # electric blue (was LEAF)
+ON_PRIMARY = "#0A0F1F"    # text on primary (was ON_LEAF)
+ACCENT = "#2EE6C5"        # electric teal (was GOLD)
+DEBIT = "#FF7181"         # coral (was #F38A63)
+TICKET_LINE = "#3A5BB8"   # inner divider on the ticket
+TRAIL_DOT = "#2E3A66"     # the dotted SMS-to-receipt trail
 
 
 def font(family: str, name: str, size: int):
@@ -41,7 +46,7 @@ LAYOUTS = {
         "ticket_body_y": 95, "ticket_amount_y": 138,
         "ticket_right": 48, "ticket_top": 74, "ticket_bottom": 56,
         "trail_x": 488, "trail_x_step": 12, "trail_y_step": 5,
-        "left": 62, "brand_y": 70, "brand_size": 66,
+        "left": 62, "brand_y": 70, "brand_size": 54,
         "title_y": 208, "title_size": 53, "title_step": 73,
         "subtitle_offset": 192, "subtitle_size": 21,
         "raw_offset": 156, "raw_right": 645, "raw_bottom": 46,
@@ -54,7 +59,7 @@ LAYOUTS = {
         "ticket_body_y": 112, "ticket_amount_y": 164,
         "ticket_right": 100, "ticket_top": 112, "ticket_bottom": 104,
         "trail_x": 630, "trail_x_step": 15, "trail_y_step": 6,
-        "left": 100, "brand_y": 108, "brand_size": 91,
+        "left": 100, "brand_y": 108, "brand_size": 74,
         "title_y": 281, "title_size": 75, "title_step": 102,
         "subtitle_offset": 260, "subtitle_size": 27,
         "raw_offset": 207, "raw_right": 780, "raw_bottom": 73,
@@ -74,18 +79,20 @@ def txt(draw, x, y, value, face, fill):
 def ticket(draw, x, y, w, h, compact=False):
     s = SCALE
     layout = LAYOUTS[compact]
-    draw.rounded_rectangle(xy((x, y, x + w, y + h)), radius=25 * s, fill=LEAF)
+    # Ticket card — now PRIMARY blue instead of LEAF green
+    draw.rounded_rectangle(xy((x, y, x + w, y + h)), radius=25 * s, fill=PRIMARY)
+    # Perforated bottom edge
     for cx in range(x + 18, x + w, 28):
         draw.ellipse(xy((cx - 9, y + h - 9, cx + 9, y + h + 9)), fill=BG)
     pad = layout["ticket_pad"]
-    txt(draw, x + pad, y + 33, "EXAMPLE · OCTOBER 2026", MEDIUM(layout["ticket_label_size"]), ON_LEAF)
-    txt(draw, x + pad, y + layout["ticket_body_y"], "Spent, so far", BODY(layout["ticket_body_size"]), ON_LEAF)
-    txt(draw, x + pad, y + layout["ticket_amount_y"], "₹2,480", MONO(layout["ticket_amount_size"]), ON_LEAF)
+    txt(draw, x + pad, y + 33, "EXAMPLE · OCTOBER 2026", MEDIUM(layout["ticket_label_size"]), ON_PRIMARY)
+    txt(draw, x + pad, y + layout["ticket_body_y"], "Spent, so far", BODY(layout["ticket_body_size"]), ON_PRIMARY)
+    txt(draw, x + pad, y + layout["ticket_amount_y"], "₹2,480", MONO(layout["ticket_amount_size"]), ON_PRIMARY)
     line = y + h - layout["ticket_line_offset"]
-    draw.line(xy((x + pad, line, x + w - pad, line)), fill="#527B63", width=2 * s)
-    txt(draw, x + pad, line + 26, "LATEST ENTRY", MEDIUM(layout["ticket_entry_size"]), ON_LEAF)
-    txt(draw, x + pad, line + 67, "Zomato", DISPLAY(layout["ticket_merchant_size"]), ON_LEAF)
-    txt(draw, x + pad, line + 117, "−₹2,480  ·  Food & dining", MONO(layout["ticket_detail_size"]), ON_LEAF)
+    draw.line(xy((x + pad, line, x + w - pad, line)), fill=TICKET_LINE, width=2 * s)
+    txt(draw, x + pad, line + 26, "LATEST ENTRY", MEDIUM(layout["ticket_entry_size"]), ON_PRIMARY)
+    txt(draw, x + pad, line + 67, "Zomato", DISPLAY(layout["ticket_merchant_size"]), ON_PRIMARY)
+    txt(draw, x + pad, line + 117, "−₹2,480  ·  Food & dining", MONO(layout["ticket_detail_size"]), ON_PRIMARY)
 
 
 def cover(width, height, name):
@@ -103,19 +110,22 @@ def cover(width, height, name):
         px = layout["trail_x"] + index * layout["trail_x_step"]
         py = (height - 192) - index * layout["trail_y_step"]
         if px < tx + 5:
-            d.ellipse(xy((px, py, px + 3, py + 3)), fill="#536553")
+            d.ellipse(xy((px, py, px + 3, py + 3)), fill=TRAIL_DOT)
 
     ticket(d, tx, ty, tw, th, compact)
     left = layout["left"]
-    txt(d, left, layout["brand_y"], "kharcha.", DISPLAY(layout["brand_size"]), INK)
+    txt(d, left, layout["brand_y"], "Paisora AI.", DISPLAY(layout["brand_size"]), INK)
     title_y = layout["title_y"]
     for i, line in enumerate(["A little clearer", "every day."]):
         txt(d, left, title_y + i * layout["title_step"], line, DISPLAY(layout["title_size"]), INK)
     sub_y = title_y + layout["subtitle_offset"]
     txt(d, left, sub_y, "The spending ledger already in your messages.", BODY(layout["subtitle_size"]), MUTED)
     raw_y = height - layout["raw_offset"]
-    d.rounded_rectangle(xy((left, raw_y - 16, layout["raw_right"], height - layout["raw_bottom"])), radius=14*SCALE, fill=SURFACE)
-    txt(d, left + 20, raw_y + 3, "EXAMPLE BANK SMS", MEDIUM(layout["raw_label_size"]), GOLD)
+    d.rounded_rectangle(
+        xy((left, raw_y - 16, layout["raw_right"], height - layout["raw_bottom"])),
+        radius=14 * SCALE, fill=SURFACE, outline="#242D48", width=1 * SCALE,
+    )
+    txt(d, left + 20, raw_y + 3, "EXAMPLE BANK SMS", MEDIUM(layout["raw_label_size"]), ACCENT)
     txt(d, left + 20, raw_y + 40, "A/C ··3381 debited by INR 2,480.00", MONO(layout["raw_text_size"]), INK)
     txt(d, left + 20, raw_y + 69, "to VPA zomato@pay", MONO(layout["raw_text_size"]), MUTED)
     canvas.resize((width, height), Image.Resampling.LANCZOS).save(OUT / name, optimize=True)
@@ -126,14 +136,27 @@ def icon(path, transparent=False, monochrome=False):
     mode = "RGBA" if transparent else "RGB"
     image = Image.new(mode, (size, size), (0, 0, 0, 0) if transparent else BG)
     d = ImageDraw.Draw(image)
-    paper = "#FFFFFF" if monochrome else LEAF
-    ink = BG if monochrome else ON_LEAF
+
+    paper = "#FFFFFF" if monochrome else PRIMARY
+    ink = BG if monochrome else ON_PRIMARY
+
+    # Receipt-card body
     d.rounded_rectangle((212, 158, 812, 828), radius=96, fill=paper)
+
+    # Perforated bottom edge
     for x in range(248, 804, 72):
         d.ellipse((x - 24, 804, x + 24, 852), fill=(0, 0, 0, 0) if transparent else BG)
-    d.text((308, 266), "k", font=DISPLAY(530 // SCALE), fill=ink, anchor="lt")
+
+    # Brand letter — "P" for Paisora AI
+    d.text((308, 260), "P", font=DISPLAY(530 // SCALE), fill=ink, anchor="lt")
+
+    # Accent dot — teal, bottom-right (was gold)
     if not monochrome:
-        d.ellipse((632, 610, 710, 688), fill=GOLD)
+        d.ellipse((632, 610, 710, 688), fill=ACCENT)
+        cx, cy = 671, 590
+        d.rectangle((cx - 3, cy - 16, cx + 3, cy + 16), fill=ACCENT)
+        d.rectangle((cx - 16, cy - 3, cx + 16, cy + 3), fill=ACCENT)
+
     image.save(path, optimize=True)
 
 

@@ -84,7 +84,7 @@ export async function downloadBackup(code: string): Promise<Snapshot> {
   } catch {
     throw new Error('Could not decrypt this backup. Check the recovery code.');
   }
-  if (snapshot.schema !== 1) throw new Error('This backup was made by an unsupported version of Kharcha.');
+  if (snapshot.schema !== 1) throw new Error('This backup was made by an unsupported version of Paisora AI.');
   await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(credentials));
   return snapshot;
 }

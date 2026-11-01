@@ -6,10 +6,18 @@ import {
   listTransactions, loadPreferences, removeBudget, removeSender, restoreSnapshot,
   saveBudget, savePreference, saveSender,
 } from '@/lib/database';
+import { readBankSms } from '@/lib/sms';
 import type { Snapshot } from '@/lib/database';
 import { DEFAULT_PREFERENCES } from '@/lib/model';
 import type { Budget, Category, Direction, Preferences, SenderRule, Transaction, TransactionStatus } from '@/lib/model';
-import { readBankSms, requestSmsPermission } from '@/lib/sms';
+import { requestSmsPermission } from '@/lib/sms';
+
+export interface ScanSummary {
+  added: number;            // new rows written to the DB
+  totalMessages: number;    // messages the native module returned
+  parsedOk: number;         // messages that passed the parser
+  rejected: number;         // totalMessages - parsedOk
+}
 
 interface LedgerContextValue {
   ready: boolean;
@@ -20,7 +28,8 @@ interface LedgerContextValue {
   senders: SenderRule[];
   preferences: Preferences;
   refresh: () => Promise<void>;
-  scan: (full?: boolean) => Promise<number>;
+  scan: (full?: boolean) => Promise<ScanSummary>;
+  rescanAllSms: () => Promise<number>;
   enableSms: () => Promise<boolean>;
   addManual: (merchant: string, rupees: number, direction: Direction, category: Category, occurredAt?: number) => Promise<void>;
   setTransaction: (id: string, merchant: string, category: Category, status: TransactionStatus) => Promise<void>;
@@ -66,22 +75,49 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
     });
   }, [refresh]);
 
-  const scan = useCallback(async (full = false): Promise<number> => {
+  const scan = useCallback(async (full = false): Promise<ScanSummary> => {
+    if (Platform.OS !== 'android' || !preferences.readSms) return { added: 0, totalMessages: 0, parsedOk: 0, rejected: 0 };
+    if (scanBusyRef.current) return { added: 0, totalMessages: 0, parsedOk: 0, rejected: 0 };
+    scanBusyRef.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const since = scanStart(full, preferences.lastScanAt);
+      const result = await readBankSms(senders, since, preferences.autoAdd);
+      let added = 0;
+      for (const candidate of result.transactions) if (await addTransaction(candidate)) added++;
+      await savePreference('lastScanAt', Date.now());
+      await refresh();
+      return {
+        added,
+        totalMessages: result.totalMessages,
+        parsedOk: result.parsedOk,
+        rejected: result.rejected,
+      };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Could not read SMS.';
+      setError(message);
+      throw e;
+    } finally { scanBusyRef.current = false; setBusy(false); }
+  }, [preferences, senders, refresh]);
+
+  const rescanAllSms = useCallback(async (): Promise<number> => {
     if (Platform.OS !== 'android' || !preferences.readSms) return 0;
     if (scanBusyRef.current) return 0;
     scanBusyRef.current = true;
     setBusy(true);
     setError(null);
     try {
-      const since = scanStart(full, preferences.lastScanAt);
-      const candidates = await readBankSms(senders, since, preferences.autoAdd);
+      const enabled = senders.filter(sender => sender.enabled);
+      if (!enabled.length) return 0;
+      const result = await readBankSms(enabled, 0, preferences.autoAdd);
       let added = 0;
-      for (const candidate of candidates) if (await addTransaction(candidate)) added++;
+      for (const candidate of result.transactions) if (await addTransaction(candidate)) added++;
       await savePreference('lastScanAt', Date.now());
       await refresh();
       return added;
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Could not read SMS.';
+      const message = e instanceof Error ? e.message : 'Could not rescan SMS.';
       setError(message);
       throw e;
     } finally { scanBusyRef.current = false; setBusy(false); }
@@ -137,7 +173,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, [refresh]);
 
   const value = useMemo<LedgerContextValue>(() => ({
-    ready, busy, error, transactions, budgets, senders, preferences, refresh, scan, enableSms,
+    ready, busy, error, transactions, budgets, senders, preferences, refresh, scan, rescanAllSms, enableSms,
     addManual, setTransaction, setBudget: changeBudget,
     removeBudget: async category => { await removeBudget(category); await refresh(); },
     setSender: async sender => { await saveSender(sender); await refresh(); },
@@ -145,7 +181,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
     setPreference: changePreference,
     restore: async snapshot => { await restoreSnapshot(snapshot); await refresh(); },
     clearError: () => setError(null),
-  }), [ready, busy, error, transactions, budgets, senders, preferences, refresh, scan, enableSms, addManual, setTransaction, changeBudget, changePreference]);
+  }), [ready, busy, error, transactions, budgets, senders, preferences, refresh, scan, rescanAllSms, enableSms, addManual, setTransaction, changeBudget, changePreference]);
 
   return <LedgerContext.Provider value={value}>{children}</LedgerContext.Provider>;
 }

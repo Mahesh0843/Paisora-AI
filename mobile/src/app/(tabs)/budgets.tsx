@@ -30,6 +30,6 @@ export default function Budgets() {
         <View style={{ height: 6, backgroundColor: p.sunk, borderRadius: 4, marginTop: 12, overflow: 'hidden' }}><View style={{ width: `${Math.min(100, used / b.amountPaise * 100)}%`, height: 6, backgroundColor: used > b.amountPaise ? p.debit : p.leaf }} /></View>
         <Text style={{ marginTop: 6, color: p.muted, fontFamily: fonts.body, fontSize: 12 }}>{money(Math.max(0, b.amountPaise - used))} left of {money(b.amountPaise)}{used > b.amountPaise ? ' · Over budget' : ''}</Text>
       </Pressable>;
-    }) : <EmptyState title="Make a little room" detail="Set a monthly amount for a category. Kharcha will show how much is left as you spend." action={<Action compact title="Set a budget" icon="plus" onPress={() => router.push('/budget')} />} />}
+    }) : <EmptyState title="Make a little room" detail="Set a monthly amount for a category. Paisora AI will show how much is left as you spend." action={<Action compact title="Set a budget" icon="plus" onPress={() => router.push('/budget')} />} />}
   </Screen>;
 }

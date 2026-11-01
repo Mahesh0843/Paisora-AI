@@ -47,6 +47,14 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS llm_cache (
+        cache_key TEXT PRIMARY KEY,
+        feature TEXT NOT NULL,
+        response TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS llm_cache_expires ON llm_cache (expires_at);
         CREATE INDEX IF NOT EXISTS transactions_by_date ON transactions (occurred_at DESC);
         CREATE INDEX IF NOT EXISTS transactions_by_status ON transactions (status, occurred_at DESC);
         CREATE TABLE IF NOT EXISTS budgets (
@@ -167,4 +175,37 @@ export async function restoreSnapshot(snapshot: Snapshot): Promise<void> {
       await tx.runAsync('INSERT INTO preferences VALUES (?,?)', key, JSON.stringify(value));
     }
   });
+}
+
+export async function getCachedLlmResponse(key: string): Promise<string | null> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<{ response: string; expires_at: number }>(
+    'SELECT response, expires_at FROM llm_cache WHERE cache_key=? AND expires_at>?',
+    key,
+    Date.now(),
+  );
+  return row?.response ?? null;
+}
+
+export async function putCachedLlmResponse(
+  key: string,
+  feature: string,
+  response: string,
+  ttlMs: number,
+): Promise<void> {
+  const db = await getDatabase();
+  const now = Date.now();
+  await db.runAsync(
+    'INSERT OR REPLACE INTO llm_cache (cache_key,feature,response,created_at,expires_at) VALUES (?,?,?,?,?)',
+    key,
+    feature,
+    response,
+    now,
+    now + Math.max(ttlMs, 1000),
+  );
+}
+
+export async function pruneExpiredLlmCache(): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM llm_cache WHERE expires_at < ?', Date.now());
 }

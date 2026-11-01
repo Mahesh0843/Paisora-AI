@@ -22,7 +22,7 @@ export default function Inbox() {
   }
   return <Screen>
     <ScreenHead title="Needs your eye" action={{ icon: 'plus', label: 'Add a transaction', onPress: () => router.push('/manual') }} />
-    <Body muted>Kharcha keeps the original bank message beside what it understood. You have the last word.</Body>
+    <Body muted>Paisora AI keeps the original bank message beside what it understood. You have the last word.</Body>
     <View style={{ flexDirection: 'row', marginTop: 22, padding: 4, backgroundColor: p.sunk, borderRadius: 12, gap: 3 }}>
       {tabs.map(tab => <Pressable key={tab.status} accessibilityRole="tab" accessibilityState={{ selected: selected === tab.status }} onPress={() => setSelected(tab.status)} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, backgroundColor: selected === tab.status ? p.surface : 'transparent', borderRadius: 9 }}><Text style={{ fontFamily: selected === tab.status ? fonts.bodyMedium : fonts.body, color: selected === tab.status ? p.ink : p.muted, fontSize: 12 }}>{tab.title}</Text></Pressable>)}
     </View>

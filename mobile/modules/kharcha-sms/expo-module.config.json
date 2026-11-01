@@ -1,6 +1,6 @@
 {
   "platforms": ["android"],
   "android": {
-    "modules": ["dev.kharcha.sms.KharchaSmsModule"]
+    "modules": ["dev.paisora.sms.KharchaSmsModule"]
   }
 }
