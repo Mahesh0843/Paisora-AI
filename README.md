@@ -1,155 +1,294 @@
-<p align="center"><img src="docs/brand/cover.png" alt="Kharcha: a spending ledger built from bank messages" width="100%"></p>
+<p align="center">
+  <img src="docs/brand/cover.png" alt="Paisora AI — your spending ledger, already in your messages" width="100%">
+</p>
 
-# Kharcha
+<h1 align="center">Paisora AI</h1>
 
-**A little clearer every day.** Kharcha turns bank transaction SMS into a private spending ledger. It keeps the original message beside the parsed amount, so you can check the source, correct a name or category, and decide what belongs in your ledger.
+<p align="center">
+  <strong>Your spending ledger, already in your messages.</strong><br>
+  Turns bank SMS into a private ledger. Ask questions in plain English. Runs on your phone.
+</p>
 
-This repository contains a working Expo app and a small Render backup API. The app works without an account or backend. The API is used only when you opt into encrypted backup.
+<p align="center">
+  <a href="https://mahesh0843.github.io/paisora-landing/">
+    <img src="https://img.shields.io/badge/Download-Android-7C5CFF?style=for-the-badge&logo=android" alt="Download for Android">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-00D9B5?style=for-the-badge" alt="MIT License">
+  </a>
+  <img src="https://img.shields.io/badge/Platform-Android-F0B453?style=for-the-badge&logo=android" alt="Android">
+</p>
 
-**Install on Android:** [Download Kharcha 1.0.0 APK](https://github.com/cneuralnetwork/kharcha/releases/download/v1.0.0/Kharcha-v1.0.0-android.apk) (Android 7.0+, 114 MB). Open the download on your device and allow installation from your browser or file manager if prompted. Manual entry works immediately; SMS access is requested only if you enable the bank SMS reader. See the [release notes and SHA-256 checksum](https://github.com/cneuralnetwork/kharcha/releases/tag/v1.0.0). This build has not yet been smoke-tested on a physical device.
+---
 
-## What you can do
+## What is Paisora AI?
 
-| Feature | Android build | iOS build | Web preview |
-| --- | --- | --- | --- |
-| Add and edit entries, assign categories, set budgets, and view insights | Yes | Yes | Yes |
-| Paste a bank SMS and review the parsed entry | Yes | Yes | Yes |
-| Read allowlisted bank SMS from the device inbox | Yes, with `READ_SMS` permission | No platform API | No browser API |
-| Optional encrypted backup to Render | Yes | Yes | Not enabled |
+Every bank sends an SMS for many transactions. Paisora AI parses supported bank messages and builds a personal spending ledger locally on your Android phone—without uploading raw SMS messages to a developer-operated server.
 
-The Android reader uses a small local Expo module. It reads only messages from enabled sender IDs. Common OTP and promotion patterns are filtered; parsing is heuristic, so review entries against your bank records. The app never asks for a bank password or login.
+The optional AI Copilot lets you ask questions such as *“How much did I spend on food this month?”* The model translates your question into a structured query and helps phrase the result. Transaction filtering and arithmetic are performed locally by the app, not by the language model.
 
-## Run from source
+> **Not on Google Play yet.** Download the APK and setup guide from the [Paisora AI landing page](https://mahesh0843.github.io/paisora-landing/).
 
-You need Node.js **22.13+**, npm, and Git. Clone the repository, then install the app dependencies:
+## Features
+
+### 📩 Automatic SMS tracking
+Reads supported bank SMS on-device, including formats from HDFC, SBI, and ICICI.
+
+Examples of supported message patterns:
+- **HDFC card UPI:** `Txn Rs.58.00 On HDFC Bank Card 7732 At merchant@ybl by UPI...`
+- **HDFC P2P transfer:** `Sent Rs.1.00 From HDFC Bank A/C *2944 To ...`
+- **Standard debit/credit:** `Rs.500 debited from A/c XX1234 at ZOMATO...`
+- **Payment types:** NEFT, IMPS, RTGS, ATM, and card transactions, where the message format is supported.
+
+Sender IDs are matched against an allowlist. The parser normalizes common two-letter routing prefixes such as `VM-`, `VK-`, `AD-`, `AX-`, and `JD-`.
+
+### 🧠 Smart categorization
+Rules-based merchant and keyword matching assigns transactions to 13 categories:
+
+`Food & dining` · `Groceries` · `Travel` · `Bills` · `Shopping` · `Health` · `Entertainment` · `Transfers` · `EMI & loans` · `Salary` · `Investment` · `Cash withdrawal` · `Other`
+
+Examples: Zomato → Food & dining, Uber → Travel, Bajaj Finance → EMI & loans, Vishal Mega Mart → Groceries.
+
+### 🔍 Review inbox
+Low-confidence parses are held in an Inbox so you can confirm, edit, or ignore them instead of silently accepting an uncertain transaction.
+
+### 🔁 Recurring payment detection
+Looks for recurring transactions such as subscriptions, rent, EMIs, salary, and SIPs using interval and amount consistency across multiple occurrences. Results are estimates and should be reviewed.
+
+### 📊 Budgets and insights
+- Monthly budgets by category with progress indicators
+- Month-over-month spending trends
+- Top merchants
+- Flags for potentially unusual activity
+
+### 🔐 PIN and biometric lock
+- Six-digit PIN with optional fingerprint unlock
+- Automatic lock after 30 seconds in the background
+- PIN derivation/hash handling using the app's secure-storage implementation
+
+### 🤖 AI Copilot
+Ask questions about your own ledger in plain English:
+- “How much did I spend on food this month?”
+- “What was my biggest expense?”
+- “Show all UPI transactions above ₹5,000.”
+
+Choose your own API key from one of these providers:
+
+| Provider | Best for |
+| --- | --- |
+| **Google Gemini** | General-purpose answers |
+| **Groq** | Fast responses |
+| **OpenRouter** | Access to multiple models |
+
+Provider availability, rate limits, and free-tier terms can change. Check each provider's current terms. The Copilot is optional and off by default.
+
+### 💾 Optional encrypted backup
+The optional backup service uses an encrypted payload model. The recovery secret is intended to let only the user decrypt their backup; the server should store ciphertext rather than readable ledger data. Review the implementation and threat model before relying on it for critical data.
+
+## Privacy
+
+Privacy is a core design goal:
+
+- **Local parsing:** raw SMS messages are parsed on the device.
+- **No app account required:** the app is designed to work without a developer-operated user account or analytics tracking.
+- **AI provider calls are optional:** when you use the Copilot, selected transaction fields may be sent directly to the AI provider you configured. Raw SMS, account numbers, and unrelated personal messages should not be included.
+- **API key storage:** provider keys are stored using `expo-secure-store` on Android.
+- **Delete controls:** use the in-app data deletion controls to clear local app data.
+- **Optional backup:** backup data is encrypted before upload.
+
+The ledger, parser, budgets, and other local features are intended to work offline. The AI Copilot and remote backup require network access. Review the app's current implementation and provider privacy policies before entering sensitive information.
+
+## Screenshots
+
+| Home | AI Copilot | Insights | Budgets |
+| :---: | :---: | :---: | :---: |
+| `screens/home.png` | `screens/copilot.png` | `screens/insights.png` | `screens/budgets.png` |
+
+Screenshots are planned. See the [landing page](https://mahesh0843.github.io/paisora-landing/) for previews.
+
+## Install
+
+### Install the APK
+
+1. Visit the [Paisora AI landing page](https://mahesh0843.github.io/paisora-landing/).
+2. Download the APK.
+3. If Android asks, allow installation from the source you used to download it.
+4. Open Paisora AI and grant SMS permission if you want automatic SMS import.
+5. Configure the supported bank sender IDs, then tap **Read my bank SMS**.
+
+Only install APKs you trust. Android may show additional security prompts for apps installed outside Google Play.
+
+### Run from source
+
+Requirements: **Node.js 22.13+**, **npm**, **Git**, and the **Android SDK** for native Android builds.
 
 ```bash
-git clone https://github.com/cneuralnetwork/kharcha.git
-cd kharcha/mobile
+git clone https://github.com/Mahesh0843/Paisora-AI.git
+cd Paisora-AI/mobile
 npm ci
 cp .env.example .env
 npm start
 ```
 
-For a quick manual-entry preview, press `w` for web or open the app in Expo Go. No Render service is needed. The web preview keeps entries in that browser's local storage; clearing site data removes them. Installed iOS and Android apps use SQLite.
-
-### Read SMS on Android
-
-Expo Go cannot load the custom `KharchaSms` native module. From `kharcha/mobile`, use a native build:
+For an Android development build, connect an Android device or start an emulator, then run:
 
 ```bash
-npm ci
 npx expo run:android
 ```
 
-That command needs an Android SDK and a connected device or emulator. For a cloud-built installable APK instead:
+Paisora AI uses a custom native Kotlin Expo module for SMS access, so **Expo Go is not sufficient**. Use a development build or EAS Build.
 
-```bash
-npx eas-cli@latest login
-npx eas-cli@latest build --platform android --profile preview
-```
-
-The first EAS run may ask you to connect or create an Expo project and configure Android signing. Install the resulting APK, open Kharcha, and choose **Read my bank SMS**. The permission prompt is shown before the first scan. On the **You** tab, review or edit bank sender IDs; standard two-letter SMS routing prefixes are ignored when matching. The initial scan covers the last 90 days, with a 1,500-message cap per scan; later scans check recent messages when the app becomes active. Duplicate source messages are ignored.
-
-For iOS, use manual entry or paste a bank SMS. iOS does not expose general inbox-reading access to third-party apps.
-
-## Add optional Render backup
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/cneuralnetwork/kharcha)
-
-The app is useful without Render. If you want cross-device recovery, the button opens this repository's [Render Blueprint](render.yaml) in your Render account. It proposes a free API web service and a paid, persistent `0.1c-256mb` Postgres database in Singapore. **Review the database cost before approving the deploy.** [Render's free Postgres expires after 30 days](https://render.com/docs/free), so it is unsuitable as the only copy of a real backup.
-
-1. Click **Deploy to Render**, sign in, choose your workspace, and review the proposed web service and database.
-2. Approve the Blueprint if the cost works for you. Render sets `DATABASE_URL` from the database and starts the API. The API creates its table at startup.
-3. Visit `https://<your-service>.onrender.com/healthz`; it should return `{"ok":true}`.
-4. In `mobile/.env`, set `EXPO_PUBLIC_BACKUP_API_URL=https://<your-service>.onrender.com`.
-5. Restart Metro, or rebuild the installed app. `EXPO_PUBLIC_` values are compiled into the client. Never put a database password or secret there.
-6. In **You → Encrypted backup**, create a recovery code, store it privately, then tap **Back up now**. To restore on another installed app, enter that code in the same screen.
-
-The Blueprint leaves automatic deploys off, so changes pushed to this public repository will not update your service unexpectedly. Deploy a newer commit from your Render dashboard when you choose to update.
-
-The recovery code contains both the access token and encryption key. Whoever has it can restore the snapshot. Losing it means the server cannot decrypt your backup. The API stores ciphertext only, along with a token hash, backup ID, version, and timestamp. Remote deletion is available in the app. See [PRIVACY.md](PRIVACY.md) for the full data flow.
-
-### Run the API locally
-
-With Docker Compose installed, start Postgres from the repository root:
-
-```bash
-docker compose up -d db
-cd api
-npm ci
-DATABASE_URL=postgres://kharcha:kharcha@localhost:5433/kharcha npm run dev
-```
-
-The database credentials in `compose.yaml` are for **local development only**. In another terminal, `curl http://localhost:4000/healthz` should return `{"ok":true}`. The API is not required to run the app without backup.
-
-## How it works
-
-```mermaid
-flowchart LR
-  SMS[Allowlisted Android bank SMS] --> Parser[On-device parser]
-  Paste[Message you paste] --> Parser
-  Manual[Manual entry] --> Ledger[(Local SQLite ledger)]
-  Parser --> Review[Review or auto-add]
-  Review --> Ledger
-  Ledger --> Insights[Home, insights, budgets]
-  Ledger -->|Explicit backup only| AES[AES-GCM on device]
-  AES --> API[Render API]
-  API --> DB[(Render Postgres ciphertext)]
-```
-
-The parser is intentionally conservative. It requires a debit or credit signal and an amount, tries to identify the merchant, and gives uncertain reads to the review inbox. High-confidence reads can be auto-added if that setting is on. A message's raw body remains attached to its entry. The API never parses SMS or calculates spending.
-
-## Repository map
-
-| Path | Purpose |
-| --- | --- |
-| [`mobile/src/app`](mobile/src/app) | Expo Router screens |
-| [`mobile/src/lib/parser.ts`](mobile/src/lib/parser.ts) | Bank SMS parsing and category rules |
-| [`mobile/src/lib/database.ts`](mobile/src/lib/database.ts) | Native SQLite ledger and snapshot format |
-| [`mobile/src/lib/database.web.ts`](mobile/src/lib/database.web.ts) | Browser-local preview storage |
-| [`mobile/modules/kharcha-sms`](mobile/modules/kharcha-sms) | Android allowlisted inbox reader |
-| [`mobile/src/lib/backup.ts`](mobile/src/lib/backup.ts) | On-device encryption and recovery code |
-| [`api/src`](api/src) | Render backup HTTP API and Postgres store |
-| [`docs/brand`](docs/brand) | Ready-to-use promotional art and generator |
-
-## Build and verify
-
-From the repository root, run:
+### Build an APK with EAS
 
 ```bash
 cd mobile
-npm ci
-npm run lint
-npm run typecheck
-npm test
-npx expo export --platform web
-npx expo export --platform android
-npx expo export --platform ios
-
-cd ../api
-npm ci
-npm run typecheck
-npm test
-npm run build
+eas build --platform android --profile preview
 ```
 
-The parser tests cover debit extraction, OTP/promotion rejection, ambiguity, and the case where a balance appears before a transaction amount. API tests cover authorization and version conflicts. A JavaScript bundle is not a native Android APK; complete a native/EAS build and test SMS permission and real bank formats on a device before distributing one.
+The preview profile is intended to produce an installable APK when configured accordingly. The production profile may produce an Android App Bundle (`.aab`) for Play Store submission.
 
-## Distribution and Play policy
+### Configure the AI Copilot
 
-Android's `READ_SMS` permission is restricted on Google Play. Google's [SMS and Call Log policy](https://support.google.com/googleplay/android-developer/answer/10208820) lists SMS-based money management as a possible exception, but a Play listing requires the permission declaration and Google's approval. Approval is not guaranteed. A manually entered and pasted-SMS edition can be distributed without that permission; remove the Android permission and native SMS reader before building that edition. Do not claim a Play-approved release until review has passed.
+1. Create an API key with [Google Gemini](https://ai.google.dev/), [Groq](https://console.groq.com/), or [OpenRouter](https://openrouter.ai/).
+2. Open **You → AI provider** in the app and enter the key.
+3. Tap **Test connection**.
+4. Open **You → Ask about your money** and ask a question.
 
-Kharcha is an expense organizer, not a bank statement or financial advice tool. It may miss messages or parse them incorrectly. Keep your bank's records as the source of truth. Before a broad public launch, add account-level abuse protection and operational monitoring to the optional backup service; its current recovery-code flow is suited to a small, self-hosted beta.
+The app calls the selected AI provider directly; the key is not intended to pass through a server operated by the Paisora AI developer. Review the configured provider's privacy and retention policies.
 
-## Graphics and promotion
+## Architecture
 
-The repository includes a [1600 × 900 cover](docs/brand/cover.png), [1200 × 630 social card](docs/brand/social-card.png), and app icons in [`mobile/assets`](mobile/assets). These are original, editable through [`docs/brand/generate.py`](docs/brand/generate.py). The financial numbers in the artwork are illustrative demo data. To regenerate after `npm ci`, install Pillow and run `python3 docs/brand/generate.py` from the repository root.
+The architecture diagram is maintained as [`arr.svg`](arr.svg). GitHub displays SVG files directly, and the diagram can also be opened separately.
 
-**Short description:** Your spending ledger, already in your messages.
+![Paisora AI architecture diagram](arr.svg)
 
-**Launch copy:** Bank messages tell a fragmented story. Kharcha puts each spend in one private ledger, keeps the original SMS close, and lets you correct anything it got wrong. Start with manual entries, or read allowlisted bank SMS on Android. Backup is optional and encrypted on your device.
+### Key design decisions
+
+- **Deterministic arithmetic:** the LLM translates natural-language questions into structured intent and helps phrase results. The local query engine calculates totals and filters transactions.
+- **Graceful fallback:** AI calls should fall back to a local template when the provider is unavailable, rate-limited, or disabled.
+- **Raw SMS stays local:** raw SMS content is stored locally and should not be included in cloud backups or AI prompts.
+- **Sender allowlists:** SMS sender IDs are checked against configured allowlists rather than relying only on message-body matching.
+- **Optional network features:** AI requests and remote backup need connectivity; core ledger features are designed for offline use.
+
+## Repository layout
+
+```text
+Paisora-AI/
+├── mobile/                         # React Native + Expo app
+│   ├── src/
+│   │   ├── app/                    # Screens and Expo Router routes
+│   │   │   ├── (tabs)/             # Home, inbox, insights, budgets, you
+│   │   │   ├── ai-settings.tsx     # AI provider and API key setup
+│   │   │   ├── copilot.tsx          # AI chat interface
+│   │   │   ├── lock.tsx             # PIN and biometric unlock
+│   │   │   ├── recurring.tsx        # Recurring payment view
+│   │   │   └── _layout.tsx          # Root layout and lock gate
+│   │   ├── components/             # Reusable UI components
+│   │   ├── lib/
+│   │   │   ├── parser.ts            # SMS parsing and categorization
+│   │   │   ├── database.ts          # Local SQLite operations
+│   │   │   ├── auth.ts              # PIN and biometric logic
+│   │   │   ├── llm.ts               # AI orchestration and safeguards
+│   │   │   ├── copilot.ts           # Intent extraction and query engine
+│   │   │   ├── providers.ts         # Gemini, Groq, OpenRouter adapters
+│   │   │   ├── recurring.ts         # Recurring transaction detection
+│   │   │   └── backup.ts            # Encrypted backup logic
+│   │   ├── state/                  # App state and ledger provider
+│   │   ├── ui/                     # Theme, icons, forms, design system
+│   │   └── types/                  # TypeScript types
+│   ├── modules/kharcha-sms/        # Native Kotlin SMS module
+│   ├── android/                    # Native Android project
+│   └── tests/                      # Parser and recurring tests
+├── api/                            # Optional encrypted-backup server
+├── docs/brand/                     # Brand assets and cover generator
+├── arr.svg                         # Architecture diagram
+├── LICENSE
+└── README.md
+```
+
+> File names may differ as the project evolves; keep this tree aligned with the repository.
+
+## Development
+
+Run the checks from the `mobile` directory:
+
+```bash
+npx tsc --noEmit
+npm test
+```
+
+If you modify native Kotlin code under `mobile/modules/kharcha-sms/android/`, rebuild the native app:
+
+```bash
+npx expo run:android
+```
+
+A Metro refresh alone does not rebuild native code.
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| App | React Native, Expo, TypeScript |
+| Navigation | Expo Router |
+| State | React Context (`LedgerProvider`) |
+| Local database | `expo-sqlite` |
+| Secure storage | `expo-secure-store` |
+| Biometrics | `expo-local-authentication` |
+| Native SMS access | Custom Kotlin Expo module |
+| AI providers | Gemini, Groq, OpenRouter |
+| Optional backup | Node.js and PostgreSQL (if enabled) |
+
+## Distribution notes
+
+Paisora AI is currently distributed through a direct APK download. Google Play restricts SMS and Call Log permissions and requires apps to qualify under its policy and complete the applicable declaration and review process. Approval is not guaranteed. Check the current [Google Play SMS and Call Log permissions policy](https://support.google.com/googleplay/android-developer/answer/10208820) before submission.
+
+iOS does not provide a general public API for third-party apps to read a user's SMS inbox. An iOS version would need a different import flow, such as manual entry or paste-SMS.
+
+## Roadmap
+
+- [x] SMS parsing for supported HDFC, SBI, and ICICI formats
+- [x] Manual entry and paste-SMS
+- [x] 13 rules-based categories
+- [x] Review inbox for uncertain parses
+- [x] PIN and biometric lock
+- [x] AI Copilot with provider selection
+- [x] Recurring payment detection
+- [x] Monthly budgets
+- [x] Encrypted backup
+- [ ] Anomaly detection
+- [ ] Monthly AI report
+- [ ] Transaction explanations
+- [ ] CSV and PDF export
+- [ ] More bank formats: Axis, Kotak, PNB, Bank of Baroda, Canara
+- [ ] Google Play submission
+
+## Credits
+
+Paisora AI is derived from **Kharcha** by [@cneuralnetwork](https://github.com/cneuralnetwork), used under the MIT License.
+
+Substantial changes in Paisora AI include:
+- Rebranding and new visual identity
+- Android package rename from `dev.kharcha.app` to `dev.paisora.ai`
+- AI Copilot integration for Gemini, Groq, and OpenRouter
+- AI provider selection and secure key storage
+- PIN and biometric app lock
+- Recurring payment detection
+- Support for additional HDFC SMS formats
+- Expansion from 8 to 13 transaction categories
+- Dedicated landing page
+
+The original Kharcha project, its README, and architecture deserve credit for the foundation. Please retain the upstream copyright and license notices.
+
+## Disclaimer
+
+Paisora AI is an expense organizer, not a bank statement, tax record, or financial-advice service. It may miss or misparse messages, and AI wording may be imperfect. It is not affiliated with any bank. Always use your bank's records as the source of truth.
 
 ## License
 
-[MIT](LICENSE). The Expo, React Native, and font packages keep their own upstream licenses.
+MIT License. See [`LICENSE`](LICENSE).
+
+Original work © 2025 cneuralnetwork (Kharcha).  
+Modifications © 2026 Singuluri Mahesh Chandra (Paisora AI).
+
+Expo, React Native, and other dependencies retain their respective licenses.
